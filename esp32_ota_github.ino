@@ -7,20 +7,47 @@
 WiFiManager wm;
 
 String FirmwareVer = {
-  "2.6"
+  "2.7"
 };
 
 #define URL_fw_Version "https://raw.githubusercontent.com/EmreOnaran/ota_updater/main/bin_version.txt"
 #define URL_fw_Bin "https://raw.githubusercontent.com/EmreOnaran/ota_updater/main/fw.bin"
 
-
-void firmwareUpdate();
 int FirmwareVersionCheck();
+void firmwareUpdate();
 
-unsigned long previousMillis = 0; // will store last time LED was updated
+unsigned long previousMillis = 0;
 unsigned long previousMillis_2 = 0;
 const long interval = 60000;
 const long mini_interval = 1000;
+
+
+
+void setup() {
+  Serial.begin(115200);
+
+    WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
+
+    bool res;
+    res = wm.autoConnect("UbiHouse Mini"); 
+    
+    if(!res) {
+        Serial.println("Internet bağlantısı kurulamadı");
+        // ESP.restart();
+    } 
+    else {
+        //if connected to the WiFi print this
+        Serial.println("Internete bağlandı");
+    }
+    
+  Serial.print("Active firmware version:");
+  Serial.println(FirmwareVer);
+}
+
+void loop() {
+  repeatedCall();
+}
+
 
 
 void repeatedCall() {
@@ -50,31 +77,7 @@ void repeatedCall() {
   }
 }
 
-
-void setup() {
-  Serial.begin(115200);
-
-    WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
-
-    bool res;
-    res = wm.autoConnect("UbiHouse Mini"); 
-    
-    if(!res) {
-        Serial.println("İnternet bağlantısı kurulamadı");
-        // ESP.restart();
-    } 
-    else {
-        //if connected to the WiFi print this
-        Serial.println("Internete bağlandı");
-    }
-    
-  Serial.print("Active firmware version:");
-  Serial.println(FirmwareVer);
-}
-void loop() {
-  repeatedCall();
-}
-
+///// Firmware update /////
 
 void firmwareUpdate(void) {
   WiFiClientSecure client;
@@ -101,8 +104,8 @@ int FirmwareVersionCheck(void) {
   int httpCode;
   String fwurl = "";
   fwurl += URL_fw_Version;
-  fwurl += "?";
-  fwurl += String(rand());
+  // fwurl += "?";
+  // fwurl += String(rand());
   Serial.println(fwurl);
   WiFiClientSecure * client = new WiFiClientSecure;
 
@@ -148,3 +151,5 @@ int FirmwareVersionCheck(void) {
   } 
   return 0;  
 }
+
+///// Firmware update /////
