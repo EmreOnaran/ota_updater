@@ -10,9 +10,8 @@
 WiFiManager wm;
 
 
-
 String FirmwareVer = {
-  "2.4"
+  "2.5"
 };
 
 #define URL_fw_Version "https://raw.githubusercontent.com/EmreOnaran/ota_updater/main/bin_version.txt"
