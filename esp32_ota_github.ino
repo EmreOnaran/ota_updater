@@ -3,21 +3,22 @@
 #include <HTTPUpdate.h>
 #include <WiFiClientSecure.h>
 #include "cert.h"
+#include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
 
-const char * ssid = "Binovist_2.5";
-const char * password = "!Beknowist!";
+
+//WiFiManager
+WiFiManager wm;
+
 
 
 String FirmwareVer = {
-  "2.2"
+  "2.3"
 };
-#define URL_fw_Version "https://raw.githubusercontent.com/programmer131/ESP8266_ESP32_SelfUpdate/master/esp32_ota/bin_version.txt"
-#define URL_fw_Bin "https://raw.githubusercontent.com/programmer131/ESP8266_ESP32_SelfUpdate/master/esp32_ota/fw.bin"
 
-//#define URL_fw_Version "http://cade-make.000webhostapp.com/version.txt"
-//#define URL_fw_Bin "http://cade-make.000webhostapp.com/firmware.bin"
+#define URL_fw_Version "https://raw.githubusercontent.com/EmreOnaran/ota_updater/main/bin_version.txt?token=GHSAT0AAAAAABUD75MRNKIWKGF7HDV7SUJUYVRL7NQ"
+#define URL_fw_Bin "https://raw.githubusercontent.com/EmreOnaran/ota_updater/main/fw.bin"
 
-void connect_wifi();
+
 void firmwareUpdate();
 int FirmwareVersionCheck();
 
@@ -47,7 +48,7 @@ void repeatedCall() {
    }
    else
    {
-    connect_wifi();
+      Serial.println("wifi not connected");
    }
   }
 }
@@ -76,13 +77,27 @@ void IRAM_ATTR isr() {
 
 
 void setup() {
+  Serial.begin(115200);
+
+    WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
+
+    bool res;
+    res = wm.autoConnect("UbiHouse Mini"); 
+    
+    if(!res) {
+        Serial.println("İnternet bağlantısı kurulamadı");
+        // ESP.restart();
+    } 
+    else {
+        //if connected to the WiFi print this
+        Serial.println("Internete bağlandı");
+    }
+    
   pinMode(button_boot.PIN, INPUT);
   attachInterrupt(button_boot.PIN, isr, RISING);
   Serial.begin(115200);
   Serial.print("Active firmware version:");
   Serial.println(FirmwareVer);
-  pinMode(LED_BUILTIN, OUTPUT);
-  connect_wifi();
 }
 void loop() {
   if (button_boot.pressed) { //to connect wifi via Android esp touch app 
@@ -93,25 +108,10 @@ void loop() {
   repeatedCall();
 }
 
-void connect_wifi() {
-  Serial.println("Waiting for WiFi");
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-
-  Serial.println("");
-  Serial.println("WiFi connected");
-  Serial.println("IP address: ");
-  Serial.println(WiFi.localIP());
-}
-
 
 void firmwareUpdate(void) {
   WiFiClientSecure client;
   client.setCACert(rootCACertificate);
-  httpUpdate.setLedPin(LED_BUILTIN, LOW);
   t_httpUpdate_return ret = httpUpdate.update(client, URL_fw_Bin);
 
   switch (ret) {
