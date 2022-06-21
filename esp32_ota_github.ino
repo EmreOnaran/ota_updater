@@ -64,11 +64,6 @@ Button button_boot = {
   0,
   false
 };
-/*void IRAM_ATTR isr(void* arg) {
-    Button* s = static_cast<Button*>(arg);
-    s->numberKeyPresses += 1;
-    s->pressed = true;
-}*/
 
 void IRAM_ATTR isr() {
   button_boot.numberKeyPresses += 1;
